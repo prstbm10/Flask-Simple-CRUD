@@ -17,21 +17,22 @@ def get_user():
 
 # create new user
 @app.route("/user", methods=["POST"])
-def create_ser():
+def create_user():
     data = request.get_json()
     
     if not data or "name" not in data or "age" not in data:
-        return jsonify({"error" : "name and age are required"}), 400
+        return jsonify({"error": "name and age are required"}), 400
     
-    # Validate that age is a number and > 18
-    age = int(data["age"])
-    validate_age(age)
+    # Validate age
+    is_valid, age_or_error = validate_age(data["age"])
+    if not is_valid:
+        return jsonify({"error": age_or_error}), 400
 
     new_id = max(user["id"] for user in users) + 1 if users else 1
     new_user = {
         "id": new_id,
         "name": data["name"],
-        "age": data["age"]
+        "age": age_or_error  # Use the validated age
     }
     users.append(new_user)
     return jsonify(new_user), 201
